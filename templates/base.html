@@ -1,0 +1,29 @@
+<html>
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='css/style.css') }}">
+    <head>
+        <title>ЛУЧШИЙ ПОИСК БИЛЕТОВ</title>
+    </head>
+    <body>
+        {% if current_user.is_anonymous %}
+            <div>
+                ЛУЧШИЙ ПОИСК БИЛЕТОВ:
+                <a href={{ url_for('start_page') }}>Search</a>
+                <a style="position:absolute;right:200px;" href={{url_for('login')}}>Login</a>
+                <a style="position:absolute;right:100px;" href={{url_for('register')}}>Register</a>
+            </div>
+        {% else %}
+            <div>
+                ЛУЧШИЙ ПОИСК БИЛЕТОВ:
+                <a href={{ url_for('start_page') }}>Search</a>
+                <span>Здравствуйте, {{ current_user.name }}!</span>
+                <a style="position:absolute;right:100px;" href={{ url_for('logout') }}>Logout</a>
+                {% if current_user.is_admin %}
+                    <a style="position:absolute;right:200px;" href={{ url_for('admin') }}>Admin Room</a>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <hr>
+        {% block content %}{% endblock %}
+    </body>
+</html>

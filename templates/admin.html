@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h class="header">Поиск лучших билетов</h>
+    <div class="cont1">
+        <div class="today_stats">
+            <div class="today_train">
+                Куплено ж/д билетов сегодня <span class="num">{{ bought_train_today }}</span>
+            </div>
+            <div class="today_air">
+                Куплено авиабилетов сегодня <span class="num">{{ bought_air_today }}</span>
+            </div>
+        </div>
+        <div class="week_stats">
+            Статистика покупки билетов за неделю
+            <img src='data:image/png;base64,{{ image_week_stats }}' alt="Статистика за неделю">
+        </div>
+    </div>
+
+    <div class="cont_range_stats">
+        <div class="date_inputs">
+            Статистика купленных билетов <input type="date" value="{{ week_start }}" id="start_date" class="range_date"> -- <input type="date" value="{{ week_end }}" id="end_date" class="range_date">
+        </div>
+        <div class="cont_img_range">
+            <img id="range_stats" src='data:image/png;base64,{{ image_range_stats }}' alt="Статистика за период">
+        </div>
+    </div>
+
+    <div class="cont_ticket_stats">
+        <div class="form_cont">
+            <form id="pie_form" method="get" novalidate>
+                {{ form.hidden_tag() }}
+                <p>
+                    <p>{{ form.ride_type(size=1) }}</p>
+                    <p>{{ form.city_from(size=32, placeholder='Откуда') }}</p>
+                    <p>{{ form.city_to(size=32, placeholder='Куда') }}</p>
+                    <p>{{ form.date_to(size=16, placeholder='Туда', type='date') }} {{ form.date_to.label }}</p>
+                    <p>{{ form.submit() }}</p>
+                </p>
+            </form>
+        </div>
+        <div class="img_seats_cont">
+            <img id="img_seats" src="" alt="Статистика билета">
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="cont_most_popular_stats">
+        <p>Самые популярные билеты:</p>
+        <div class="air">
+            Авиа
+            <div class="ticket_buy" type={{ most_popular_air_ticket['type'] }}>
+                <div style="overflow: hidden">
+                    <div class="from">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(most_popular_air_ticket['dtime_departure'].hour, most_popular_air_ticket['dtime_departure'].minute) }}</span> <span class="date">{{ most_popular_air_ticket['dtime_departure'].date() }}</span>
+                        </p>
+                        <p class="city_station">{{ most_popular_air_ticket['city_from']+', '+most_popular_air_ticket['ap_from'] }}</p>
+                    </div>
+
+                    <div class="to">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(most_popular_air_ticket['dtime_arrived'].hour, most_popular_air_ticket['dtime_arrived'].minute) }}</span> <span class="date">{{ most_popular_air_ticket['dtime_arrived'].date() }}</span>
+                        </p>
+                        <p class="city">{{ most_popular_air_ticket['city_to']+', '+most_popular_air_ticket['ap_to'] }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="train">
+            Ж/Д
+            <div class="ticket_buy" type={{ most_popular_train_ticket['type'] }}>
+                <div style="overflow: hidden">
+                    <div class="from">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(most_popular_train_ticket['dtime_departure'].hour, most_popular_train_ticket['dtime_departure'].minute) }}</span> <span class="date">{{ most_popular_train_ticket['dtime_departure'].date() }}</span>
+                        </p>
+                        <p class="city_station">{{ most_popular_train_ticket['city_from']+', '+most_popular_train_ticket['ap_from'] }}</p>
+                    </div>
+
+                    <div class="to">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(most_popular_train_ticket['dtime_arrived'].hour, most_popular_train_ticket['dtime_arrived'].minute) }}</span> <span class="date">{{ most_popular_train_ticket['dtime_arrived'].date() }}</span>
+                        </p>
+                        <p class="city">{{ most_popular_train_ticket['city_to']+', '+most_popular_train_ticket['ap_to'] }}</p>
+                    </div>
+                </div>
+
+                </div>
+            </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+        $.ajaxSetup({
+                beforeSend: function(xhr, settings) {
+                    if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
+                        xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                    }
+                }
+            })
+    </script>
+    <script src='{{ url_for('static', filename='js/admin.js') }}'></script>
+{% endblock %}

@@ -1,0 +1,163 @@
+.form_container, .ticket, .ticket_buy{
+    border: 2px solid #000000;
+    border-radius: 10px;
+    margin: 10px;
+}
+
+.ticket{
+    width: 80%;
+    cursor: pointer;
+}
+
+.ticket .time{
+    font-size: 200%;
+    font-weight: bold;
+}
+
+.ticket_buy .time{
+    font-size: 200%;
+    font-weight: bold;
+}
+
+.ticket, .ticket_buy p{
+    margin: 5px;
+}
+
+.ticket, .ticket_buy *{
+    user-select: none;
+}
+
+.ticket:hover{
+    visibility: visible;
+    background: #d0cfd4;
+}
+
+#search {
+  margin:0 5% 0 5%;
+  width:90%;
+}
+
+.date_inputs {
+    margin:0 20% 0 20%;
+    width:60%;
+    font-size: xx-large;
+}
+
+div.to{
+    float: right;
+    text-align: right;
+}
+
+div.from{
+    float: left;
+}
+
+.from, .to{
+    width: 30%;
+    margin: 5px;
+}
+
+.ticket_buy{
+    width: 80%;
+}
+
+.header{
+    font-size: 40px;
+    font-weight: bold;
+}
+
+.today_stats{
+    float: left;
+    display: inline-block;
+    width: 50%;
+    font-size: xx-large;
+    height: 90%;
+    text-align: center;
+}
+
+.today_stats div{
+    height: 49%;
+    line-height: 100px;
+    text-align: center;
+    border: 2px solid #6f6f6f;
+}
+
+.today_stats div span{
+    font-size: 50px;
+    font-weight: bold;
+    color: #79787d;
+}
+
+.week_stats{
+    display: inline-block;
+    width: 40%;
+    text-align: center;
+    font-size: x-large;
+    border: 2px solid #6f6f6f;
+}
+
+div img{
+    width: 100%;
+    height: 80%;
+}
+
+.cont1{
+    height: 300px;
+}
+
+.cont_ticket_stats{
+    border: 2px solid #6f6f6f;
+    width: 90%;
+    height: 320px;
+}
+
+.cont_ticket_stats form{
+    border: 2px solid #6f6f6f;
+}
+
+.cont_ticket_stats form *{
+    margin: 10px;
+}
+
+.form_cont{
+    margin: 10px;
+    width: 40%;
+    float: left;
+}
+
+.img_seats_cont{
+    width: 40%;
+    border: 2px solid #6f6f6f;
+    display: inline-block;
+    margin: 10px;
+}
+
+.cont_ticket_stats > div{
+    margin: 30px;
+}
+
+.cont_most_popular_stats{
+    height: 200px;
+}
+
+.cont_most_popular_stats > div{
+    width: 40%;
+    height: 100%;
+}
+
+.cont_most_popular_stats .air{
+    float: left;
+}
+
+.cont_most_popular_stats .train{
+    display: inline-block;
+}
+
+.choose > div{
+    border: 2px solid #6f6f6f;
+    display: inline-block;
+}
+
+.choose{
+    margin-left: 10%;
+}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="list_container">
+        {% for ticket in tickets %}
+            <div class="ticket_buy">
+                <div style="overflow: hidden">
+                    <div class="from">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(ticket['dtime_departure'].hour, ticket['dtime_departure'].minute) }}</span> <span class="date">{{ ticket['dtime_departure'].date() }}</span>
+                        </p>
+                        <p class="city_station">{{ ticket['city_from']+', '+ticket['ap_from'] }}</p>
+                    </div>
+
+                    <div class="to">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(ticket['dtime_arrived'].hour, ticket['dtime_arrived'].minute) }}</span> <span class="date">{{ ticket['dtime_arrived'].date() }}</span>
+                        </p>
+                        <p class="city">{{ ticket['city_to']+', '+ticket['ap_to'] }}</p>
+                    </div>
+                </div>
+                {% if ticket['already_bought'] %}
+                    <p>Вы уже купили этот билет {{ ticket.class_title }}</p>
+                {% else %}
+                    <p>Цена билета: <span class="price">{{ ticket.price }}$</span> {{ ticket.class_title }} Свободно: {{ ticket.free_seats }}</p>
+                {% endif %}
+
+            </div>
+        {% endfor %}
+    </div>
+    {% if bought%}
+        <div class="result">Вы уже купили все эти билеты!!!</div>
+    {% else %}
+        <button id="buy_button">Берём??</button>
+        <div class="result"></div>
+
+    {% endif %}
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src='{{ url_for('static', filename='js/buy.js') }}'></script>
+{% endblock %}

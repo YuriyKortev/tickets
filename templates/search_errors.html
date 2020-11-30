@@ -1,0 +1,10 @@
+{% extends "main.html" %}
+
+{% block result %}
+
+    <p>Введите города и даты и нажмите поиск!</p>
+    {% for error in errors %}
+        <p>{{ error }}</p>
+    {% endfor %}
+
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "main.html" %}
+
+{% block result %}
+    <p>Туда: </p>
+    {% if paths_to %}
+        <div class="list_container">
+        {% for path in paths_to %}
+            <div class="ticket" type={{ path[0]['type'] }}>
+                <div style="overflow: hidden">
+                    <div class="from">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(path[0]['dtime_departure'].hour, path[0]['dtime_departure'].minute) }}</span> <span class="date">{{ path[0]['dtime_departure'].date() }}</span>
+                        </p>
+                        <p class="city_station">{{ path[0]['city_from']+', '+path[0]['ap_from'] }}</p>
+                    </div>
+
+                    <div class="to">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(path[-1]['dtime_arrived'].hour, path[-1]['dtime_arrived'].minute) }}</span> <span class="date">{{ path[-1]['dtime_arrived'].date() }}</span>
+                        </p>
+                        <p class="city">{{ path[-1]['city_to']+', '+path[-1]['ap_to'] }}</p>
+                    </div>
+                </div>
+
+                <ul class="path">
+                    {% set full_price=namespace(value=0) %}
+                    {% for node in path %}
+                        <li ac_id="{{ node['class_id'] }}">{{ node['city_from'] + '-' + node['city_to'] + '  Цена билета: {}$'.format(node['price'])}}</li>
+                        {% set full_price.value=full_price.value + node['price'] %}
+                    {% endfor %}
+
+                </ul>
+
+                <p>Цена маршрута: <span class="price">{{ full_price.value }}$</span></p>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        Туда нет рейсов :(
+    {% endif %}
+
+    <p>Обратно: </p>
+    {% if paths_back %}
+        <div class="list_container" >
+        {% for path in paths_back %}
+            <div class="ticket" type={{ path[0]['type'] }}>
+                <div style="overflow: hidden">
+                    <div class="from">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(path[0]['dtime_departure'].hour, path[0]['dtime_departure'].minute) }}</span> <span class="date">{{ path[0]['dtime_departure'].date() }}</span>
+                        </p>
+                        <p class="city_station">{{ path[0]['city_from']+', '+path[0]['ap_from'] }}</p>
+                    </div>
+
+                    <div class="to">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(path[-1]['dtime_arrived'].hour, path[-1]['dtime_arrived'].minute) }}</span> <span class="date">{{ path[-1]['dtime_arrived'].date() }}</span>
+                        </p>
+                        <p class="city">{{ path[-1]['city_to']+', '+path[-1]['ap_to'] }}</p>
+                    </div>
+                </div>
+
+                <ul class="path">
+                    {% set full_price=namespace(value=0) -%}
+                    {% for node in path -%}
+                        <li ac_id="{{ node['class_id'] }}">{{ node['city_from'] + '-' + node['city_to'] + '  Цена билета: {}$'.format(node['price'])}}</li>
+                        {% set full_price.value=full_price.value + node['price'] %}
+                    {% endfor -%}
+                </ul>
+
+                <p>Цена маршрута: <span class="price">{{ full_price.value }}$</span></p>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        Нет рейсов :(
+    {% endif %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src='{{ url_for('static', filename='js/search.js') }}'></script>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 style="text-align: center">ПОИСК ЛУЧШИХ БИЛЕТОВ</h1>
+
+    <div class="choose">
+        <div class="link_air">
+            <a href="{{ url_for('start_page') }}">Авиабилеты</a>
+        </div>
+
+        <div class="link_train">
+            <a href="{{ url_for('start_page_train') }}">Ж/Д билеты</a>
+        </div>
+    </div>
+
+    <div class="form_container">
+    <form id="search" action={{ url_for(form.action) }} method="get" novalidate>
+        {{ form.hidden_tag() }}
+        <p>
+            {{ form.city_from(size=32, placeholder='Откуда') }}
+            --->
+            {{ form.city_to(size=32, placeholder='Куда') }}
+            {{ form.date_to(size=16, placeholder='Туда', type='date') }} {{ form.date_to.label }}
+            {{ form.date_back(size=16, placeholder='Обратно', type='date') }} {{ form.date_back.label }}
+            {{ form.class_(size=1, placeholder='Класс') }} {{ form.class_.label }}
+            {{ form.submit() }}
+        </p>
+    </form>
+    </div>
+
+    {% block result %}{% endblock %}
+{% endblock %}
