@@ -1,0 +1,22 @@
+version: "3"
+services:
+  server:
+    build: .
+    command: python routes.py
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "5000:5000"
+
+
+  neo4j:
+    image: discsports/neo4j-apoc
+    environment:
+      - NEO4J_AUTH=none
+      - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_apoc_import_file_enabled=true
+      - NEO4J_apoc_export_file_enabled=true
+    ports:
+      - '7474:7474'
+      - '7473:7473'
+      - '7687:7687'

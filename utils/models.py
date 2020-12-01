@@ -1,12 +1,13 @@
 from neomodel import (config, StructuredNode, StringProperty, IntegerProperty, BooleanProperty,
                       RelationshipTo, DateTimeProperty, StructuredRel, One, ZeroOrMore,
-                      RelationshipFrom, DoesNotExist, DateProperty, db)
+                      RelationshipFrom, DoesNotExist, DateProperty, db, clear_neo4j_database)
 
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import UserMixin
 from app import app, login_manager
 from datetime import timedelta, date, datetime
 
+#config.DATABASE_URL = 'bolt://neo4j:@neo4j:7687'
 config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
 config.AUTO_INSTALL_LABELS = True
 
@@ -14,6 +15,26 @@ config.AUTO_INSTALL_LABELS = True
 today = date(year=2020, month=12, day=6)
 week_start = today - timedelta(days=today.weekday())
 week_end = week_start + timedelta(days=7)
+
+
+def generate_export():
+
+    res, cols = db.cypher_query('''
+          CALL apoc.export.csv.all(null, {stream:true})
+          YIELD file, nodes, relationships, properties, data
+          RETURN file, nodes, relationships, properties, data
+     ''')
+    with open('files/db.csv', 'w', encoding='utf-8') as f:
+        print(res[0][4], file=f)
+
+
+def import_from_csv(filename):
+    #clear_neo4j_database(db)
+    res, cols = db.cypher_query(f'''
+              load csv with headers from 'http://localhost:5000/uploads/{filename}' as row return row
+         ''')
+    print(res)
+    return res
 
 
 def date_range(start_date, end_date):
@@ -174,7 +195,9 @@ class Person(UserMixin, StructuredNode):
                     match (n:Person) where ID(n)={node_id} return n
                 '''
         results, columns = db.cypher_query(query)
-        return Person.inflate(results[0][0])
+        if results:
+            return Person.inflate(results[0][0])
+        return None
 
 
 @login_manager.user_loader

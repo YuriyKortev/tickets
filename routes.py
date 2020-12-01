@@ -1,14 +1,15 @@
-from flask import render_template, redirect, url_for, request, flash, current_app, session, jsonify
+from flask import render_template, redirect, url_for, request, flash, current_app, session, jsonify, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
 from flask_principal import RoleNeed, ActionNeed, Permission,\
     identity_loaded, Identity, identity_changed, AnonymousIdentity
 from werkzeug.urls import url_parse
 from app import app
 from utils.models import Person, City, path_filter, DoesNotExist, Air_flight, Air_class, Train_class, Train_ride,\
-    SeatType, week_end, week_start
+    SeatType, week_end, week_start, generate_export, import_from_csv
 from utils.forms import SearchForm_air, LoginForm, RegistrationForm, SearchForm_train, SearchRide
 from utils.stats import get_week_stats, get_pie, get_range_stats
 from datetime import datetime
+import os
 
 
 @app.route('/')
@@ -23,6 +24,23 @@ def start_page_train():
 
 
 admin = Permission(RoleNeed('admin'))
+
+
+@app.route('/uploads/<path:filename>')
+def export(filename):
+    uploads = os.path.join(current_app.root_path, app.config['UPLOAD_FOLDER'])
+    generate_export()
+    return send_from_directory(directory=uploads, filename=filename)
+
+
+@app.route('/import_db', methods=['POST'])
+@login_required
+@admin.require(http_exception=403)
+def import_db():
+    file = request.files.get('file')
+    file.save(app.config['UPLOAD_FOLDER']+'/import.csv')
+    print(import_from_csv('import.csv'))
+    return True
 
 
 @identity_loaded.connect
@@ -220,4 +238,5 @@ def search_train():
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=False, host='0.0.0.0')
+    import_from_csv('db.csv')

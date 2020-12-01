@@ -76,10 +76,17 @@ div.from{
 }
 
 .today_stats div{
-    height: 49%;
+    height: 30%;
     line-height: 100px;
     text-align: center;
     border: 2px solid #6f6f6f;
+}
+
+.files div{
+    float: left;
+    width: 30%;
+    height: 100%;
+    margin-left: 50px;
 }
 
 .today_stats div span{
@@ -102,7 +109,7 @@ div img{
 }
 
 .cont1{
-    height: 300px;
+    height: 500px;
 }
 
 .cont_ticket_stats{
