@@ -2,7 +2,7 @@ version: "3"
 services:
   server:
     build: .
-    command: python routes.py runserver --host 0.0.0.0
+    command: python routes.py
     environment:
       - PYTHONUNBUFFERED=1
     ports:
@@ -16,7 +16,7 @@ services:
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
       - NEO4J_apoc_import_file_enabled=true
       - NEO4J_apoc_export_file_enabled=true
-      - NEO4J_dbms_directories_import=
+      - NEO4J_dbms_directories_import=import
       - NEO4J_dbms_security_allow__csv__import__from__file__urls=true
     ports:
       - '7474:7474'

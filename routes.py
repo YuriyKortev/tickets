@@ -12,6 +12,7 @@ from datetime import datetime
 import os
 import pandas as pd
 import webbrowser
+import threading
 
 
 @app.route('/')
@@ -265,5 +266,5 @@ def preload():
 
 
 if __name__ == '__main__':
-    webbrowser.open('http://0.0.0.0:5000/preload')
+    threading.Timer(3, import_from_csv, args=['http://0.0.0.0:5000/preload']).start()
     app.run(debug=False, host='0.0.0.0')

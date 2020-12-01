@@ -7,6 +7,7 @@ from flask_login import UserMixin
 from app import app, login_manager
 from datetime import timedelta, date, datetime
 
+
 #config.DATABASE_URL = 'bolt://neo4j:@test:7687'
 config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
 config.AUTO_INSTALL_LABELS = True

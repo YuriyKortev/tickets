@@ -3,7 +3,6 @@ from flask_login import LoginManager
 from flask_principal import Principal
 
 app = Flask(__name__)
-
 app.config['SECRET_KEY'] = 'you-will-never-guess'
 app.config['UPLOAD_FOLDER'] = 'files'
 
