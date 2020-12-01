@@ -56,6 +56,7 @@
 
     <div class="cont_most_popular_stats">
         <p>Самые популярные билеты:</p>
+        {% if most_popular_air_ticket %}
         <div class="air">
             Авиа
             <div class="ticket_buy" type={{ most_popular_air_ticket['type'] }}>
@@ -76,6 +77,8 @@
                 </div>
             </div>
         </div>
+        {% endif %}
+        {% if most_popular_train_ticket %}
         <div class="train">
             Ж/Д
             <div class="ticket_buy" type={{ most_popular_train_ticket['type'] }}>
@@ -97,6 +100,7 @@
 
                 </div>
             </div>
+    {% endif %}
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>

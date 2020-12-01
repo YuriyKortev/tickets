@@ -1,15 +1,17 @@
 from flask import render_template, redirect, url_for, request, flash, current_app, session, jsonify, send_from_directory
 from flask_login import current_user, login_user, logout_user, login_required
-from flask_principal import RoleNeed, ActionNeed, Permission,\
+from flask_principal import RoleNeed, ActionNeed, Permission, \
     identity_loaded, Identity, identity_changed, AnonymousIdentity
 from werkzeug.urls import url_parse
 from app import app
-from utils.models import Person, City, path_filter, DoesNotExist, Air_flight, Air_class, Train_class, Train_ride,\
+from utils.models import Person, City, path_filter, DoesNotExist, Air_flight, Air_class, Train_class, Train_ride, \
     SeatType, week_end, week_start, generate_export, import_from_csv
 from utils.forms import SearchForm_air, LoginForm, RegistrationForm, SearchForm_train, SearchRide
 from utils.stats import get_week_stats, get_pie, get_range_stats
 from datetime import datetime
 import os
+import pandas as pd
+import webbrowser
 
 
 @app.route('/')
@@ -38,9 +40,27 @@ def export(filename):
 @admin.require(http_exception=403)
 def import_db():
     file = request.files.get('file')
-    file.save(app.config['UPLOAD_FOLDER']+'/import.csv')
-    print(import_from_csv('import.csv'))
-    return True
+    file.save(app.config['UPLOAD_FOLDER'] + '/import.csv')
+    df = pd.read_csv('files/import.csv', encoding='cp1251')
+
+    df[df['_labels'] == ':City'].to_csv('files/City.csv', sep=',', encoding='utf-8')
+    df[df['_labels'] == ':Airport'].to_csv('files/Airport.csv', sep=',', encoding='utf-8')
+    df[df['_labels'] == ':Person'].to_csv('files/Person.csv', sep=',', encoding='utf-8')
+    df[df['_labels'] == ':Air_flight'].to_csv('files/Air_flight.csv', sep=',', encoding='utf-8')
+    df[df['_labels'] == ':Air_class'].to_csv('files/Air_class.csv', sep=',', encoding='utf-8')
+    df[df['_labels'] == ':Station'].to_csv('files/Station.csv', sep=',', encoding='utf-8')
+    df[df['_labels'] == ':Train_ride'].to_csv('files/Train_ride.csv', sep=',', encoding='utf-8')
+    df[df['_labels'] == ':Train_class'].to_csv('files/Train_class.csv', sep=',', encoding='utf-8')
+
+    df[df['_type'] == 'FROM'].to_csv('files/FROM.csv', sep=',', encoding='utf-8')
+    df[df['_type'] == 'TO'].to_csv('files/TO.csv', sep=',', encoding='utf-8')
+    df[df['_type'] == 'LOCATED'].to_csv('files/LOCATED.csv', sep=',', encoding='utf-8')
+    df[df['_type'] == 'REGISTERED_ON'].to_csv('files/REGISTERED_ON.csv', sep=',', encoding='utf-8')
+    df[df['_type'] == 'CLASS'].to_csv('files/CLASS.csv', sep=',', encoding='utf-8')
+
+    print(import_from_csv())
+
+    return 'True'
 
 
 @identity_loaded.connect
@@ -120,7 +140,8 @@ def login():
         return redirect(url_for('start_page'))
     form = LoginForm()
     if form.validate_on_submit():
-        print('name: {}, password: {}, remember me: {}'.format(form.username.data, form.password.data, form.remember_me.data))
+        print('name: {}, password: {}, remember me: {}'.format(form.username.data, form.password.data,
+                                                               form.remember_me.data))
         user = Person.nodes.get_or_none(name=form.username.data)
 
         if user is None or not user.check_password(form.password.data):
@@ -237,6 +258,12 @@ def search_train():
     return search(SearchForm_train, Train_ride)
 
 
+@app.route('/preload')
+def preload():
+    import_from_csv()
+    return 'db_loaded'
+
+
 if __name__ == '__main__':
+    webbrowser.open('http://0.0.0.0:5000/preload')
     app.run(debug=False, host='0.0.0.0')
-    import_from_csv('db.csv')

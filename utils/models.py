@@ -7,8 +7,8 @@ from flask_login import UserMixin
 from app import app, login_manager
 from datetime import timedelta, date, datetime
 
-#config.DATABASE_URL = 'bolt://neo4j:@neo4j:7687'
-config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
+#config.DATABASE_URL = 'bolt://neo4j:@test:7687'
+config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
 config.AUTO_INSTALL_LABELS = True
 
 # today = datetime.now().date()
@@ -28,13 +28,76 @@ def generate_export():
         print(res[0][4], file=f)
 
 
-def import_from_csv(filename):
-    #clear_neo4j_database(db)
-    res, cols = db.cypher_query(f'''
-              load csv with headers from 'http://localhost:5000/uploads/{filename}' as row return row
-         ''')
-    print(res)
-    return res
+def import_from_csv(some_args=None):
+    clear_neo4j_database(db)
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/Air_class.csv' as row
+                        create (:Air_class{id: toInteger(row._id), class_type:row.class_type, price: toInteger(row.price), seats: toInteger(row.seats)})
+            ''')
+
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/Air_flight.csv' as row
+                        create (:Air_flight{id: toInteger(row._id)})
+             ''')
+
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/Airport.csv' as row
+                        create (:Airport{id: toInteger(row._id), name:row.name})
+             ''')
+
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/City.csv' as row
+                        create (:City{id: toInteger(row._id), name:row.name})
+             ''')
+
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/Person.csv' as row
+                        create (:Person{id: toInteger(row._id), email:row.email, is_admin:toBoolean(row.is_admin), name:row.name, password_hash: row.password_hash, phone_number: row.phone_number})
+             ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/Station.csv' as row
+                        create (:Station{id: toInteger(row._id), name:row.name})
+                 ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/Train_class.csv' as row
+                        create (:Train_class{id: toInteger(row._id), class_type:row.class_type, price:toInteger(row.price), seats: toInteger(row.seats)})
+                 ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/Train_ride.csv' as row
+                        create (:Train_ride{id: toInteger(row._id)})
+                 ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/CLASS.csv' as row
+                        match (st) where st.id = toInteger(row._start)
+                        match (end) where end.id = toInteger(row._end)
+                        create (st)-[:CLASS]->(end)
+                 ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/FROM.csv' as row
+                        match (st) where st.id = toInteger(row._start)
+                        match (end) where end.id = toInteger(row._end)
+                        create (st)-[:FROM{time: datetime(row.time)}]->(end)
+                 ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/LOCATED.csv' as row
+                        match (st) where st.id = toInteger(row._start)
+                        match (end) where end.id = toInteger(row._end)
+                        create (st)-[:LOCATED]->(end)
+                 ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/REGISTERED_ON.csv' as row
+                        match (st) where st.id = toInteger(row._start)
+                        match (end) where end.id = toInteger(row._end)
+                        create (st)-[:REGISTERED_ON{buy_date: date(row.buy_date)}]->(end)
+                 ''')
+    db.cypher_query('''
+                    load csv with headers from 'http://server:5000/uploads/TO.csv' as row
+                        match (st) where st.id = toInteger(row._start)
+                        match (end) where end.id = toInteger(row._end)
+                        create (st)-[:TO{time: datetime(row.time)}]->(end)
+                 ''')
+
+    return True
 
 
 def date_range(start_date, end_date):
@@ -279,9 +342,12 @@ class SeatType(object):
                     limit 1
                 '''
         results, columns = db.cypher_query(query)
-        seat_class = cls.inflate(results[0][0])
-        ride = seat_class.get_ride()
-        return cls.get_ticket(ride, seat_class)
+        if results:
+            seat_class = cls.inflate(results[0][0])
+            ride = seat_class.get_ride()
+            return cls.get_ticket(ride, seat_class)
+        else:
+            return None
 
     @staticmethod
     def get_ticket(ride_type, seat_class):

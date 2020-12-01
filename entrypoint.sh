@@ -10,7 +10,7 @@ cmd="$@"
 
 until curl http://"$host":"$port"; do
   >&2 echo "neo4j is unavailable - sleeping"
-  sleep 1
+  sleep 5
 done
 
 >&2 echo "neo4j is up - executing command"

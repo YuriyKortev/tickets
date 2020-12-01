@@ -1,0 +1,7 @@
+,_id,_labels,class_type,email,is_admin,name,password_hash,phone_number,price,seats,_start,_end,_type,buy_date,time
+26,26.0,:Person,,kortev@yandex.ru,True,Yura123,pbkdf2:sha256:150000$EKHi2nIB$bef1c410f96881196c95f984ff35c7705c87e3cf72cfd46f9af7d9f1bf0bb5e3,89819481550.0,,,,,,,
+82,101.0,:Person,,fdsf@mail.ru,False,User1,pbkdf2:sha256:150000$vOX4eejq$f4d2b3f89ab286a2d571feeb30fe1b278aaf7bab0ccdb2dd85d244b7a70c5d46,,,,,,,,
+83,102.0,:Person,,fsf@gdf.ru,False,User2,pbkdf2:sha256:150000$lFsHmCYf$dbb2a9de3853a85f12fb3c20e8fd19d0ad6c7e3499ba995f23033e5d43ab99ae,,,,,,,,
+84,103.0,:Person,,adming@gm.ru,True,admin,pbkdf2:sha256:150000$uKFVumra$3e2a9a6db80ff85080e177a861dc799f4795880aa654abb8e520128c4d82d58b,,,,,,,,
+85,104.0,:Person,,fsd@gmail.ru,False,User3,pbkdf2:sha256:150000$EGCt487c$8f66e81d20773ee19a279212e62201dffe54ee96b2f50703eb5c8ef0eb5c6366,,,,,,,,
+86,105.0,:Person,,fds@gf.ru,False,User4,pbkdf2:sha256:150000$SMr6ZhmW$e0781d7ce447853882551c57000454814ae8e360072f2a9dd6e076879d0f9e68,,,,,,,,
