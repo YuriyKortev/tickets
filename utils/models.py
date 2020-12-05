@@ -8,8 +8,8 @@ from app import app, login_manager
 from datetime import timedelta, date, datetime
 
 
-#config.DATABASE_URL = 'bolt://neo4j:@test:7687'
-config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
+config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
+#config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
 config.AUTO_INSTALL_LABELS = True
 
 # today = datetime.now().date()
@@ -184,89 +184,19 @@ class Ride(object):
 
         return bought, all_seats-bought
 
-
-class Air_flight(Ride, StructuredNode):
-    from_ = RelationshipFrom(Airport, 'FROM', model=Dtime, cardinality=One)
-    to_ = RelationshipTo(Airport, 'TO', model=Dtime, cardinality=One)
-    plane_class = RelationshipTo('Air_class', 'CLASS')
-    station_type = 'Airport'
-    ticket_type = 'air'
-
-    def get_class(self, class_id):
-        if class_id == 1:
-            return self.plane_class.get_or_none(class_type='Economy')
-        elif class_id == 2:
-            return self.plane_class.get_or_none(class_type='Business')
-        elif class_id == 3:
-            return self.plane_class.get_or_none(class_type='First')
-
-
-class Train_ride(Ride, StructuredNode):
-    from_ = RelationshipFrom('Station', 'FROM', model=Dtime, cardinality=One)
-    to_ = RelationshipTo('Station', 'TO', model=Dtime, cardinality=One)
-    train_class = RelationshipTo('Train_class', 'CLASS')
-    station_type = 'Station'
-    ticket_type = 'train'
-
-    def get_class(self, class_id):
-        if class_id == 1:
-            return self.train_class.get_or_none(class_type='Купэ')
-        elif class_id == 2:
-            return self.train_class.get_or_none(class_type='Плацкарт')
-        elif class_id == 3:
-            return self.train_class.get_or_none(class_type='СВ')
-
-
-class Person(UserMixin, StructuredNode):
-    name = StringProperty()
-    password_hash = StringProperty()
-    email = StringProperty()
-    phone_number = StringProperty()
-    is_admin = BooleanProperty()
-
-    registered_air = RelationshipTo('Air_class', 'REGISTERED_ON', cardinality=ZeroOrMore, model=Date_rel)
-    registered_train = RelationshipTo('Train_class', 'REGISTERED_ON', cardinality=ZeroOrMore, model=Date_rel)
-
-    def set_password_hash(self, password):
-        self.password_hash = generate_password_hash(password)
-
-    def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
-
-    def register_on_air_ticket(self, class_id):
-        ac = Air_class.get_ticket_class_by_id(class_id)
-        res = self.registered_air.connect(ac)
-        res.buy_date = datetime.now().date()
-        res.save()
-        if res:
-            return True
-        else:
-            return False
-
-    def register_on_train_ticket(self, class_id):
-        tc = Train_class.get_ticket_class_by_id(class_id)
-        res = self.registered_train.connect(tc)
-        res.buy_date = datetime.now().date()
-        res.save()
-        if res:
-            return True
-        else:
-            return False
-
-    @staticmethod
-    def get_person_by_id(node_id):
+    @classmethod
+    def create_ride(cls, station_from, station_to, dt_from, dt_to):
         query = f'''
-                    match (n:Person) where ID(n)={node_id} return n
-                '''
-        results, columns = db.cypher_query(query)
-        if results:
-            return Person.inflate(results[0][0])
-        return None
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return Person.get_person_by_id(user_id)
+                            match (c1:{cls.station_type}{{name:'{station_from}'}})
+                            match (c2:{cls.station_type}{{name:'{station_to}'}})
+                            create (c1)-[:FROM{{time:datetime('{str(dt_from).replace(' ','T')}')}}]->(ride:{cls.__name__})-[:TO{{time:datetime('{str(dt_to).replace(' ','T')}')}}]->(c2)
+                            create (:{cls.ticket_class.__name__}{{class_type:'{cls.ticket_class.types[0]['name']}', price:{cls.ticket_class.types[0]['price']}, seats:{cls.ticket_class.types[0]['seats']} }})<-[:CLASS]-(ride)
+                            create (:{cls.ticket_class.__name__}{{class_type:'{cls.ticket_class.types[1]['name']}', price:{cls.ticket_class.types[1]['price']}, seats:{cls.ticket_class.types[1]['seats']} }})<-[:CLASS]-(ride)
+                            create (:{cls.ticket_class.__name__}{{class_type:'{cls.ticket_class.types[2]['name']}', price:{cls.ticket_class.types[2]['price']}, seats:{cls.ticket_class.types[2]['seats']} }})<-[:CLASS]-(ride)
+                        '''
+        print(query)
+        db.cypher_query(query)
+        return 'True'
 
 
 class SeatType(object):
@@ -370,6 +300,10 @@ class SeatType(object):
 
 
 class Air_class(SeatType, StructuredNode):
+    types = [{'name': 'Economy', 'price': 200, 'seats': 300},
+             {'name': 'Business', 'price': 400, 'seats': 300},
+             {'name': 'First', 'price': 800, 'seats': 300}]
+
     def get_ride(self):
         res = super().get_ride()
         return Air_flight.inflate(res[0][0])
@@ -393,6 +327,10 @@ class Air_class(SeatType, StructuredNode):
 
 
 class Train_class(SeatType, StructuredNode):
+    types = [{'name': 'Плацкарт', 'price': 200, 'seats': 300},
+             {'name': 'Купэ', 'price': 300, 'seats': 300},
+             {'name': 'СВ', 'price': 500, 'seats': 300}]
+
     def get_ride(self):
         res = super().get_ride()
         return Train_ride.inflate(res[0][0])
@@ -413,6 +351,93 @@ class Train_class(SeatType, StructuredNode):
             tickets.append(ticket)
 
         return tickets
+
+
+
+class Air_flight(Ride, StructuredNode):
+    from_ = RelationshipFrom(Airport, 'FROM', model=Dtime, cardinality=One)
+    to_ = RelationshipTo(Airport, 'TO', model=Dtime, cardinality=One)
+    plane_class = RelationshipTo('Air_class', 'CLASS')
+    station_type = 'Airport'
+    ticket_type = 'air'
+    ticket_class = Air_class
+
+    def get_class(self, class_id):
+        if class_id == 1:
+            return self.plane_class.get_or_none(class_type='Economy')
+        elif class_id == 2:
+            return self.plane_class.get_or_none(class_type='Business')
+        elif class_id == 3:
+            return self.plane_class.get_or_none(class_type='First')
+
+
+class Train_ride(Ride, StructuredNode):
+    from_ = RelationshipFrom('Station', 'FROM', model=Dtime, cardinality=One)
+    to_ = RelationshipTo('Station', 'TO', model=Dtime, cardinality=One)
+    train_class = RelationshipTo('Train_class', 'CLASS')
+    station_type = 'Station'
+    ticket_type = 'train'
+    ticket_class = Train_class
+
+    def get_class(self, class_id):
+        if class_id == 1:
+            return self.train_class.get_or_none(class_type='Купэ')
+        elif class_id == 2:
+            return self.train_class.get_or_none(class_type='Плацкарт')
+        elif class_id == 3:
+            return self.train_class.get_or_none(class_type='СВ')
+
+
+class Person(UserMixin, StructuredNode):
+    name = StringProperty()
+    password_hash = StringProperty()
+    email = StringProperty()
+    phone_number = StringProperty()
+    is_admin = BooleanProperty()
+
+    registered_air = RelationshipTo('Air_class', 'REGISTERED_ON', cardinality=ZeroOrMore, model=Date_rel)
+    registered_train = RelationshipTo('Train_class', 'REGISTERED_ON', cardinality=ZeroOrMore, model=Date_rel)
+
+    def set_password_hash(self, password):
+        self.password_hash = generate_password_hash(password)
+
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def register_on_air_ticket(self, class_id):
+        ac = Air_class.get_ticket_class_by_id(class_id)
+        res = self.registered_air.connect(ac)
+        res.buy_date = datetime.now().date()
+        res.save()
+        if res:
+            return True
+        else:
+            return False
+
+    def register_on_train_ticket(self, class_id):
+        tc = Train_class.get_ticket_class_by_id(class_id)
+        res = self.registered_train.connect(tc)
+        res.buy_date = datetime.now().date()
+        res.save()
+        if res:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def get_person_by_id(node_id):
+        query = f'''
+                    match (n:Person) where ID(n)={node_id} return n
+                '''
+        results, columns = db.cypher_query(query)
+        if results:
+            return Person.inflate(results[0][0])
+        return None
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Person.get_person_by_id(user_id)
 
 
 class Station(StructuredNode):

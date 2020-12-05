@@ -37,22 +37,65 @@
     <div class="cont_ticket_stats">
         <div class="form_cont">
             <form id="pie_form" method="get" novalidate>
-                {{ form.hidden_tag() }}
+                <p>Введите данные!! Справа появится статистика</p>
+                {{ stats_form.hidden_tag() }}
                 <p>
-                    <p>{{ form.ride_type(size=1) }}</p>
-                    <p>{{ form.city_from(size=32, placeholder='Откуда') }}</p>
-                    <p>{{ form.city_to(size=32, placeholder='Куда') }}</p>
-                    <p>{{ form.date_to(size=16, placeholder='Туда', type='date') }} {{ form.date_to.label }}</p>
-                    <p>{{ form.submit() }}</p>
+                    <p>{{ stats_form.ride_type(size=1) }} {{ stats_form.ride_type.label }}</p>
+                    <p>{{ stats_form.city_from(size=32, placeholder='Откуда') }}</p>
+                    <p>{{ stats_form.city_to(size=32, placeholder='Куда') }}</p>
+                    <p>{{ stats_form.date_from(size=16, placeholder='Отправление', type='date') }} {{ stats_form.date_from.label }}</p>
+                    <p>{{ stats_form.submit() }}</p>
                 </p>
             </form>
         </div>
         <div class="img_seats_cont">
-            <img id="img_seats" src="" alt="Статистика билета">
+            <img id="img_seats" src="https://million-wallpapers.ru/wallpapers/1/29/11429117059824776806/koshka-glaza-pokryvalo-lapy-kot-belyj-potyagivaetsya.jpg" alt="Статистика билета">
         </div>
     </div>
-
     <hr>
+    <hr>
+    <div class="create_form_cont">
+        <form id="create_ride" method="post" novalidate>
+            <p>Создание поездки!!!</p>
+            {{ create_form.hidden_tag() }}
+            <p>
+            <p>{{ create_form.ride_type(size=1) }} {{ create_form.ride_type.label }}</p>
+            <p>{{ create_form.station_from(size=32, placeholder='Откуда  (Аэропорт или станция)') }} </p>
+            <div id="station_from_errors"></div>
+            <p>{{ create_form.station_to(size=32, placeholder='Куда  (Аэропорт или станция)') }}</p>
+            <div id="station_to_errors"></div>
+            <p>{{ create_form.date_from(size=16, placeholder='Отправление', type='datetime-local') }} {{ create_form.date_from.label }}</p>
+            <div id="date_from_errors"></div>
+            <p>{{ create_form.date_to(size=16, placeholder='Прибытие', type='datetime-local') }} {{ create_form.date_to.label }}</p>
+            <div id="date_to_errors"></div>
+            <p>{{ create_form.submit() }}</p>
+            </p>
+        </form>
+
+        <form id="create_station" method="post" novalidate>
+            <p>Создание станции!!!</p>
+            {{ create_station_form.hidden_tag() }}
+            <p>
+            <p>{{ create_station_form.station_type(size=1) }}  {{ create_station_form.station_type.label }}</p>
+            <p>{{ create_station_form.station_name(size=32, placeholder='Название станции') }}</p>
+            <div id="station_name_errors"></div>
+            <p>{{ create_station_form.station_location(size=1) }} {{ create_station_form.station_location.label }}</p>
+
+            <p>{{ create_station_form.submit() }}</p>
+            </p>
+        </form>
+
+        <form id="create_city" method="post" novalidate>
+            <p>Создание города!!!</p>
+            {{ create_city_form.hidden_tag() }}
+            <p>
+            <p>{{ create_city_form.city_name(size=32, placeholder='Название города') }}</p>
+            <div id="city_name_errors"></div>
+
+            <p>{{ create_city_form.submit() }}</p>
+            </p>
+        </form>
+    </div>
 
     <div class="cont_most_popular_stats">
         <p>Самые популярные билеты:</p>
@@ -107,7 +150,7 @@
         $.ajaxSetup({
                 beforeSend: function(xhr, settings) {
                     if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                        xhr.setRequestHeader("X-CSRFToken", "{{ form.csrf_token._value() }}")
+                        xhr.setRequestHeader("X-CSRFToken", "{{ stats_form.csrf_token._value() }}")
                     }
                 }
             })

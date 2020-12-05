@@ -5,8 +5,9 @@ from flask_principal import RoleNeed, ActionNeed, Permission, \
 from werkzeug.urls import url_parse
 from app import app
 from utils.models import Person, City, path_filter, DoesNotExist, Air_flight, Air_class, Train_class, Train_ride, \
-    SeatType, week_end, week_start, generate_export, import_from_csv
-from utils.forms import SearchForm_air, LoginForm, RegistrationForm, SearchForm_train, SearchRide
+    SeatType, week_end, week_start, generate_export, import_from_csv, Station, Airport
+from utils.forms import SearchForm_air, LoginForm, RegistrationForm, SearchForm_train, SearchRide, CreateRide, \
+    CreateCity, CreateStation
 from utils.stats import get_week_stats, get_pie, get_range_stats
 from datetime import datetime
 import os
@@ -84,10 +85,62 @@ def render_pie():
             ride_type = Train_ride
         else:
             ride_type = Air_flight
-        bought_seats, free_seats = ride_type.get_ride_stats(form.city_from.data, form.city_to.data, form.date_to.data)
+        bought_seats, free_seats = ride_type.get_ride_stats(form.city_from.data, form.city_to.data, form.date_from.data)
         pie_image = get_pie(bought_seats, free_seats)
 
         return pie_image
+
+    return jsonify(data=form.errors)
+
+
+@app.route('/admin/create_ride', methods=['POST'])
+@login_required
+@admin.require(http_exception=403)
+def create_ride():
+    form = CreateRide()
+
+    if form.validate_on_submit():
+        if form.ride_type.data == 'Air_flight':
+            ride_type = Air_flight
+        elif form.ride_type.data == 'Train_ride':
+            ride_type = Train_ride
+        else:
+            ride_type = Air_flight
+
+        ride_type.create_ride(form.station_from.data, form.station_to.data, form.date_from.data, form.date_to.data)
+
+        return 'True'
+
+    return jsonify(data=form.errors)
+
+
+@app.route('/admin/create_city', methods=['POST'])
+@login_required
+@admin.require(http_exception=403)
+def create_city():
+    form = CreateCity()
+
+    if form.validate_on_submit():
+        City(name=form.city_name.data).save()
+        return 'True'
+
+    return jsonify(data=form.errors)
+
+
+@app.route('/admin/create_station', methods=['POST'])
+@login_required
+@admin.require(http_exception=403)
+def create_station():
+    form = CreateStation()
+
+    if form.validate_on_submit():
+        if form.station_type.data == 'Airport':
+            st = Airport(name=form.station_name.data).save()
+        else:
+            st = Station(name=form.station_name.data).save()
+        city = City.nodes.get(name=form.station_location.data)
+        st.located.connect(city)
+        return 'True'
 
     return jsonify(data=form.errors)
 
@@ -123,6 +176,11 @@ def admin():
     most_popular_air_ticket = Air_class.get_most_popular_ticket()
     most_popular_train_ticket = Train_class.get_most_popular_ticket()
 
+    create_city_form = CreateCity()
+    create_station_form = CreateStation()
+
+    create_station_form.station_location.choices = [(city.name, city.name) for city in City.nodes.all()]
+
     return render_template('admin.html',
                            bought_air_today=bought_air_today,
                            bought_train_today=bought_train_today,
@@ -132,7 +190,10 @@ def admin():
                            most_popular_train_ticket=most_popular_train_ticket,
                            week_start=week_start,
                            week_end=week_end,
-                           form=SearchRide())
+                           stats_form=SearchRide(),
+                           create_form=CreateRide(),
+                           create_city_form=create_city_form,
+                           create_station_form=create_station_form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -247,6 +308,9 @@ def search(form, ride_type):
                                paths_to=paths_to,
                                paths_back=paths_back,
                                form=form)
+
+    error_messages.append('Вы не ввели данные в форму!!!')
+    return render_template('search_errors.html', form=form, errors=error_messages)
 
 
 @app.route('/air/search/', methods=['GET'])

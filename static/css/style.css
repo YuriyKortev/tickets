@@ -115,7 +115,7 @@ div img{
 .cont_ticket_stats{
     border: 2px solid #6f6f6f;
     width: 90%;
-    height: 320px;
+    height: 350px;
 }
 
 .cont_ticket_stats form{
@@ -130,6 +130,23 @@ div img{
     margin: 10px;
     width: 40%;
     float: left;
+}
+
+.create_form_cont{
+    border: 2px solid #6f6f6f;
+    height: 400px;
+}
+
+.create_form_cont > form{
+    border: 2px solid #6f6f6f;
+    margin: 20px;
+    float: left;
+    width: 30%;
+    height: 90%;
+}
+
+.create_form_cont > form *{
+    margin: 10px;
 }
 
 .img_seats_cont{

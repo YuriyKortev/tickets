@@ -27,6 +27,72 @@ $(document).ready(function() {
             e.preventDefault(); // block the traditional submission of the form.
         });
 
+        $('#create_ride').submit(function (e) {
+            var url = "/admin/create_ride"; // send the form data here.
+            $.ajax({
+                type: "post",
+                url: url,
+                data: $(this).serialize(), // serializes the form's elements.
+                success: (data) => {
+                    if(data === 'True'){
+                        $(this).append('<p> Рейс успешно добавлен!!!!!! </p>')  // display the returned data in the console.
+                    }
+                    else{
+                        for (const [key, value] of Object.entries(data['data'])) {
+                              value.forEach(function (item) {
+                                    $('#'+key+'_errors').append(`<span>[${item}]</span>`)
+                              })
+                        }
+                    }
+                }
+            });
+            e.preventDefault(); // block the traditional submission of the form.
+        });
+
+        $('#create_city').submit(function (e) {
+            var url = "/admin/create_city"; // send the form data here.
+            $.ajax({
+                type: "post",
+                url: url,
+                data: $(this).serialize(), // serializes the form's elements.
+                success: (data) => {
+                    if(data === 'True'){
+                        $(this).append('<p> Город успешно добавлен!!!!!! </p>')  // display the returned data in the console.
+                    }
+                    else{
+                        for (const [key, value] of Object.entries(data['data'])) {
+                              value.forEach(function (item) {
+                                    $('#'+key+'_errors').append(`<span>[${item}]</span>`)
+                              })
+                        }
+                    }
+                }
+            });
+            e.preventDefault(); // block the traditional submission of the form.
+        });
+
+        $('#create_station').submit(function (e) {
+            var url = "/admin/create_station"; // send the form data here.
+            $.ajax({
+                type: "post",
+                url: url,
+                data: $(this).serialize(), // serializes the form's elements.
+                success: (data) => {
+                    if(data === 'True'){
+                        $(this).append('<p> Станция успешно добавлен!!!!!! </p>')  // display the returned data in the console.
+                    }
+                    else{
+                        for (const [key, value] of Object.entries(data['data'])) {
+                              value.forEach(function (item) {
+                                    $('#'+key+'_errors').append(`<span>[${item}]</span>`)
+                              })
+                        }
+                    }
+                }
+            });
+            e.preventDefault(); // block the traditional submission of the form.
+        });
+
         $('#import_button').click(function (e) {
             const a = document.createElement('a');
             a.style.display = 'none';
