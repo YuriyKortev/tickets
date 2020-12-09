@@ -8,8 +8,8 @@ from app import app, login_manager
 from datetime import timedelta, date, datetime
 
 
-config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
-#config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
+#config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
+config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
 config.AUTO_INSTALL_LABELS = True
 
 # today = datetime.now().date()
@@ -264,7 +264,10 @@ class SeatType(object):
                     match (n:{cls.__name__}) where ID(n)={node_id} return n
                 '''
         results, columns = db.cypher_query(query)
-        return cls.inflate(results[0][0])
+        if results:
+            return cls.inflate(results[0][0])
+        else:
+            raise DoesNotExist
 
     @classmethod
     def get_list_of_air_classes(cls, list_of_node_id):

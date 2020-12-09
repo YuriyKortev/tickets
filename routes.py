@@ -239,7 +239,11 @@ def buy_train_ticket():
     args = request.args.getlist('id')
     if request.method == 'GET':
         print(args)
-        tickets = Train_class.get_tickets(args, current_user)
+        try:
+            tickets = Train_class.get_tickets(args, current_user)
+        except DoesNotExist:
+            return redirect(url_for('start_page'))
+
         return render_template('buy_tickets.html', tickets=tickets,
                                bought=all([ticket['already_bought'] for ticket in tickets]))
 
