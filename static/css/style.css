@@ -115,7 +115,7 @@ div img{
 .cont_ticket_stats{
     border: 2px solid #6f6f6f;
     width: 90%;
-    height: 350px;
+    height: 430px;
 }
 
 .cont_ticket_stats form{
@@ -177,6 +177,10 @@ div img{
     display: inline-block;
 }
 
+.cont_range_stats{
+    margin-bottom: 50px;
+}
+
 .choose > div{
     border: 2px solid #6f6f6f;
     display: inline-block;
@@ -184,4 +188,8 @@ div img{
 
 .choose{
     margin-left: 10%;
+}
+
+.city_and_stations_cont .city_name{
+    font-weight: bold;
 }

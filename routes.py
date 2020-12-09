@@ -5,7 +5,7 @@ from flask_principal import RoleNeed, ActionNeed, Permission, \
 from werkzeug.urls import url_parse
 from app import app
 from utils.models import Person, City, path_filter, DoesNotExist, Air_flight, Air_class, Train_class, Train_ride, \
-    SeatType, week_end, week_start, generate_export, import_from_csv, Station, Airport
+    SeatType, week_end, week_start, generate_export, import_from_csv, Station, Airport, date_range
 from utils.forms import SearchForm_air, LoginForm, RegistrationForm, SearchForm_train, SearchRide, CreateRide, \
     CreateCity, CreateStation
 from utils.stats import get_week_stats, get_pie, get_range_stats
@@ -19,12 +19,14 @@ import threading
 @app.route('/')
 @app.route('/air')
 def start_page():
-    return render_template('main.html', form=SearchForm_air())
+    tickets = [SeatType.get_ticket(af, sc) for af in Air_flight.nodes.all() for sc in af.plane_class.all()]
+    return render_template('all_tickets.html', form=SearchForm_air(), tickets=tickets)
 
 
 @app.route('/train')
 def start_page_train():
-    return render_template('main.html', form=SearchForm_train())
+    tickets = [SeatType.get_ticket(tr, sc) for tr in Train_ride.nodes.all() for sc in tr.train_class.all()]
+    return render_template('all_tickets.html', form=SearchForm_train(), tickets=tickets)
 
 
 admin = Permission(RoleNeed('admin'))
@@ -86,6 +88,10 @@ def render_pie():
         else:
             ride_type = Air_flight
         bought_seats, free_seats = ride_type.get_ride_stats(form.city_from.data, form.city_to.data, form.date_from.data)
+
+        if bought_seats is 0 and free_seats is 0:
+            return 'https://sitechecker.pro/wp-content/uploads/2017/12/404.png'
+
         pie_image = get_pie(bought_seats, free_seats)
 
         return pie_image
@@ -158,7 +164,10 @@ def render_range_stats():
     air_stats = Air_class.get_num_of_sold_tickets_in_date_range(start_date, end_date)
     train_stats = Train_class.get_num_of_sold_tickets_in_date_range(start_date, end_date)
 
-    image = get_range_stats(air_stats, train_stats)
+    try:
+        image = get_range_stats(air_stats, train_stats, list(date_range(start_date, end_date)))
+    except (ValueError, IndexError):
+        return 'https://sitechecker.pro/wp-content/uploads/2017/12/404.png'
 
     return image
 
@@ -181,11 +190,14 @@ def admin():
 
     create_station_form.station_location.choices = [(city.name, city.name) for city in City.nodes.all()]
 
+    labels_x_dare_range = list(date_range(week_start, week_end))
+
     return render_template('admin.html',
                            bought_air_today=bought_air_today,
                            bought_train_today=bought_train_today,
                            image_week_stats=get_week_stats(stats_on_week_air, stats_on_week_train),
-                           image_range_stats=get_range_stats(stats_in_date_range_air, stats_in_date_range_train),
+                           image_range_stats=get_range_stats(stats_in_date_range_air, stats_in_date_range_train,
+                                                             labels_x_dare_range),
                            most_popular_air_ticket=most_popular_air_ticket,
                            most_popular_train_ticket=most_popular_train_ticket,
                            week_start=week_start,
@@ -193,7 +205,8 @@ def admin():
                            stats_form=SearchRide(),
                            create_form=CreateRide(),
                            create_city_form=create_city_form,
-                           create_station_form=create_station_form)
+                           create_station_form=create_station_form,
+                           cities=City.nodes.all())
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -244,7 +257,6 @@ def buy_train_ticket():
 def buy_air_ticket():
     args = request.args.getlist('id')
     if request.method == 'GET':
-        print(args)
         tickets = Air_class.get_tickets(args, current_user)
         return render_template('buy_tickets.html', tickets=tickets,
                                bought=all([ticket['already_bought'] for ticket in tickets]))
@@ -298,10 +310,10 @@ def search(form, ride_type):
             error_messages.append('Такого города не существует!')
             return render_template('search_errors.html', form=form, errors=error_messages)
 
-        paths_to = city_from.ways_to(form.city_to.data, int(form.class_.data), ride_type)
+        paths_to = city_from.ways_to(form.city_to.data, form.class_.data, ride_type)
         paths_to = list(filter(path_filter(form.date_to.data), paths_to))
 
-        paths_back = city_to.ways_to(form.city_from.data, int(form.class_.data), ride_type)
+        paths_back = city_to.ways_to(form.city_from.data, form.class_.data, ride_type)
         paths_back = list(filter(path_filter(form.date_back.data), paths_back))
 
         return render_template('search_results.html',
@@ -310,7 +322,7 @@ def search(form, ride_type):
                                form=form)
 
     error_messages.append('Вы не ввели данные в форму!!!')
-    return render_template('search_errors.html', form=form, errors=error_messages)
+    return redirect(url_for('start_page'))
 
 
 @app.route('/air/search/', methods=['GET'])

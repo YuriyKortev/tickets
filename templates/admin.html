@@ -12,16 +12,18 @@
             </div>
             <div class="files">
                 <div class="export">
-                    <button id="import_button">Экспорт</button>
+                    <label for="export_button" class="btn">Export</label>
+                    <button id="export_button" style="visibility:hidden;">Экспорт</button>
                 </div>
                 <div class="import">
-                    <input id="import_file" type="file">
+                    <label for="import_file" class="btn">Import</label>
+                    <input id="import_file" type="file" style="visibility:hidden;">
                 </div>
             </div>
         </div>
         <div class="week_stats">
             Статистика покупки билетов за неделю
-            <img src='data:image/png;base64,{{ image_week_stats }}' alt="Статистика за неделю">
+            <img src='{{ image_week_stats }}' alt="Статистика за неделю">
         </div>
     </div>
 
@@ -30,7 +32,7 @@
             Статистика купленных билетов <input type="date" value="{{ week_start }}" id="start_date" class="range_date"> -- <input type="date" value="{{ week_end }}" id="end_date" class="range_date">
         </div>
         <div class="cont_img_range">
-            <img id="range_stats" src='data:image/png;base64,{{ image_range_stats }}' alt="Статистика за период">
+            <img id="range_stats" src='{{ image_range_stats }}' alt="Статистика за период">
         </div>
     </div>
 
@@ -42,8 +44,11 @@
                 <p>
                     <p>{{ stats_form.ride_type(size=1) }} {{ stats_form.ride_type.label }}</p>
                     <p>{{ stats_form.city_from(size=32, placeholder='Откуда') }}</p>
+                    <div id="city_from_errors"></div>
                     <p>{{ stats_form.city_to(size=32, placeholder='Куда') }}</p>
+                    <div id="city_to_errors"></div>
                     <p>{{ stats_form.date_from(size=16, placeholder='Отправление', type='date') }} {{ stats_form.date_from.label }}</p>
+                    <div id="date_from_errors"></div>
                     <p>{{ stats_form.submit() }}</p>
                 </p>
             </form>
@@ -144,6 +149,33 @@
                 </div>
             </div>
     {% endif %}
+    </div>
+
+    <hr>
+    <hr>
+    <div class="city_and_stations_cont">
+        <ul>
+            {% for city in cities %}
+                <li>
+                    <span class="city_name">{{ city.name }} </span><hr>
+
+                    Аэропорты:
+                    <ul>
+                        {% for airport in city.airports.all() %}
+                            <li>{{ airport.name }}</li>
+                        {% endfor %}
+                    </ul>
+
+                    ЖД станции:
+                    <ul>
+                        {% for station in city.stations.all() %}
+                            <li>{{ station.name }}</li>
+                        {% endfor %}
+                    </ul>
+                <hr>
+                </li>
+            {% endfor %}
+        </ul>
     </div>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script>

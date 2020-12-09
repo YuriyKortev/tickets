@@ -1,0 +1,28 @@
+{% extends 'main.html' %}
+
+{% block result %}
+
+    {% for ticket in tickets %}
+            <div id="{{ ticket['class_id'] }}" class="ticket" type={{ ticket['type'] }}>
+                <div style="overflow: hidden">
+                    <div class="from">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(ticket['dtime_departure'].hour, ticket['dtime_departure'].minute) }}</span> <span class="date">{{ ticket['dtime_departure'].date() }}</span>
+                        </p>
+                        <p class="city_station">{{ ticket['city_from']+', '+ticket['ap_from'] }}</p>
+                    </div>
+
+                    <div class="to">
+                        <p class="datetime">
+                            <span class="time">{{ '{}:{}'.format(ticket['dtime_arrived'].hour, ticket['dtime_arrived'].minute) }}</span> <span class="date">{{ ticket['dtime_arrived'].date() }}</span>
+                        </p>
+                        <p class="city">{{ ticket['city_to']+', '+ticket['ap_to'] }}</p>
+                    </div>
+                </div>
+
+                <p>Цена билета: <span class="price">{{ ticket['price']}}$</span> Класс: <span class="class_title">{{ ticket['class_title']}}</span></p>
+            </div>
+    {% endfor %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src='{{ url_for('static', filename='js/all_tickets.js') }}'></script>
+{% endblock %}

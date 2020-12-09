@@ -9,7 +9,7 @@ def image_from_plt(fig):
     tmpfile = BytesIO()
     fig.savefig(tmpfile, format='png', transparent=True)
     encoded = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
-    return encoded
+    return "data:image/png;base64,"+encoded
 
 
 def get_week_stats(y_air, y_train):
@@ -31,7 +31,7 @@ def get_week_stats(y_air, y_train):
     return image_from_plt(fig)
 
 
-def get_range_stats(y_air, y_train):
+def get_range_stats(y_air, y_train, x_labels):
     plt.clf()
 
     y_air = np.array(y_air)
@@ -50,7 +50,9 @@ def get_range_stats(y_air, y_train):
     plt.legend()
     ax = plt.gca()
     ax.yaxis.grid(True)
-    ax.set_xticklabels([])
+    ax.set_xticks(range(len(x_labels)))
+    ax.set_xticklabels(x_labels, rotation=-45)
+    plt.tight_layout()
 
     return image_from_plt(plt)
 

@@ -5,7 +5,7 @@ from wtforms.validators import DataRequired, Optional, ValidationError, Email, E
 from utils.models import Person, Airport, Station, City
 from wtforms.fields.html5 import DateTimeLocalField
 from datetime import datetime
-
+import ast
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
@@ -23,12 +23,14 @@ class SearchForm(FlaskForm):
 
 
 class SearchForm_air(SearchForm):
-    class_ = SelectField(u'Класс', choices=[(1, 'Эконом'), (2, 'Бизнес'), (3, 'Первый')])
+    class_ = SelectField(u'Класс', choices=[('[1, 2, 3]', 'Любой'), ('[1]', 'Эконом'), ('[2]', 'Бизнес'), ('[3]', 'Первый')],
+                         coerce=ast.literal_eval)
     action = 'search_air'
 
 
 class SearchForm_train(SearchForm):
-    class_ = SelectField(u'Класс', choices=[(1, 'Плацкарт'), (2, 'Купе'), (3, 'СВ')])
+    class_ = SelectField(u'Класс', choices=[('[1, 2, 3]', 'Любой'), ('[1]', 'Плацкарт'), ('[2]', 'Купе'), ('[3]', 'СВ')],
+                         coerce=ast.literal_eval)
     action = 'search_train'
 
 
@@ -59,6 +61,17 @@ class SearchRide(FlaskForm):
     city_to = StringField('Куда', validators=[DataRequired()])
     date_from = DateField('Отправление', validators=[DataRequired()])
     submit = SubmitField('Поиск')
+
+    def val_city(self, city_n):
+        city = City.nodes.get_or_none(name=city_n.data)
+        if city is None:
+            raise ValidationError('Такого города не существует!!!!!!!!!!!!!')
+
+    def validate_city_from(form, city_n):
+        form.val_city(city_n)
+
+    def validate_city_to(form, city_n):
+        form.val_city(city_n)
 
 
 class CreateRide(FlaskForm):

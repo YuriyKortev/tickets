@@ -9,7 +9,7 @@ $(document).ready(function() {
                 url: url,
                 data: dict, // serializes the form's elements.
                 success: function (data) {
-                    $('#range_stats').attr('src', 'data:image/png;base64,'+ data) // display the returned data in the console.
+                    $('#range_stats').attr('src', data) // display the returned data in the console.
                 }
             });
         });
@@ -21,7 +21,17 @@ $(document).ready(function() {
                 url: url,
                 data: $(this).serialize(), // serializes the form's elements.
                 success: function (data) {
-                    $('#img_seats').attr('src', 'data:image/png;base64,'+ data)  // display the returned data in the console.
+                    if (typeof data !== 'string' && 'data' in data){
+                        for (const [key, value] of Object.entries(data['data'])) {
+                              value.forEach(function (item) {
+                                    $('#'+key+'_errors').append(`<span>[${item}]</span>`)
+                              })
+                        }
+                    }
+                    else {
+                        console.log('suc')
+                        $('#img_seats').attr('src', data)  // display the returned data in the console.
+                    }
                 }
             });
             e.preventDefault(); // block the traditional submission of the form.
@@ -79,7 +89,7 @@ $(document).ready(function() {
                 data: $(this).serialize(), // serializes the form's elements.
                 success: (data) => {
                     if(data === 'True'){
-                        $(this).append('<p> Станция успешно добавлен!!!!!! </p>')  // display the returned data in the console.
+                        $(this).append('<p> Станция успешно добавлена!!!!!! </p>')  // display the returned data in the console.
                     }
                     else{
                         for (const [key, value] of Object.entries(data['data'])) {
@@ -93,7 +103,7 @@ $(document).ready(function() {
             e.preventDefault(); // block the traditional submission of the form.
         });
 
-        $('#import_button').click(function (e) {
+        $('#export_button').click(function (e) {
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = '/uploads/db.csv';
@@ -115,7 +125,7 @@ $(document).ready(function() {
                 cache: false,
                 processData: false,
                 success: function(data) {
-                    console.log('Success!');
+                    $('.import').append('<p>Импорт успешно совершен!!!</p>')
                 },
             });
         })

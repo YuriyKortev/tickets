@@ -8,14 +8,14 @@ from app import app, login_manager
 from datetime import timedelta, date, datetime
 
 
-#config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
-config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
+config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
+#config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
 config.AUTO_INSTALL_LABELS = True
 
 # today = datetime.now().date()
 today = date(year=2020, month=12, day=6)
 week_start = today - timedelta(days=today.weekday())
-week_end = week_start + timedelta(days=7)
+week_end = week_start + timedelta(days=6)
 
 
 def generate_export():
@@ -102,7 +102,7 @@ def import_from_csv(some_args=None):
 
 
 def date_range(start_date, end_date):
-    for n in range(int((end_date - start_date).days)):
+    for n in range(int((end_date - start_date).days)+1):
         yield start_date + timedelta(n)
 
 
@@ -116,8 +116,10 @@ class Date_rel(StructuredRel):
 
 class City(StructuredNode):
     name = StringProperty()
+    stations = RelationshipFrom('Station', 'LOCATED')
+    airports = RelationshipFrom('Airport', 'LOCATED')
 
-    def ways_to(self, city, class_type, ride_type):
+    def ways_to(self, city, class_types, ride_type):
         query = f'''
                     match path = (ct1:City{{name:'{self.name}'}})<-[:LOCATED]-(:{ride_type.station_type})-[*]->(:{ride_type.station_type})-[:LOCATED]->(ct2:City{{name:'{city}'}})
                     with [x in nodes(path) where x:{ride_type.__name__}] as ns
@@ -126,15 +128,16 @@ class City(StructuredNode):
         results, columns = self.cypher(query)
         paths = []
         for result in results:
-            path = []
-            for res in result[0]:
-                ride = ride_type.inflate(res)
-                seat_class = ride.get_class(class_type)
+            for class_type in class_types:
+                path = []
+                for res in result[0]:
+                    ride = ride_type.inflate(res)
+                    seat_class = ride.get_class(class_type)
 
-                node = seat_class.get_ticket(ride, seat_class)
+                    node = SeatType.get_ticket(ride, seat_class)
 
-                path.append(node)
-            paths.append(path)
+                    path.append(node)
+                paths.append(path)
         return paths
 
 
@@ -211,7 +214,10 @@ class SeatType(object):
                     return ride
                 '''
         results, columns = db.cypher_query(query)
-        return results
+        if results:
+            return results[0][0]
+        else:
+            raise DoesNotExist
 
     def num_of_free_seats(self):
         query = f'''
@@ -275,7 +281,12 @@ class SeatType(object):
         results, columns = db.cypher_query(query)
         if results:
             seat_class = cls.inflate(results[0][0])
-            ride = seat_class.get_ride()
+
+            try:
+                ride = seat_class.get_ride()
+            except DoesNotExist:
+                return None
+
             return cls.get_ticket(ride, seat_class)
         else:
             return None
@@ -306,7 +317,7 @@ class Air_class(SeatType, StructuredNode):
 
     def get_ride(self):
         res = super().get_ride()
-        return Air_flight.inflate(res[0][0])
+        return Air_flight.inflate(res)
 
     @staticmethod
     def get_tickets(list_of_node_id, user):
@@ -333,7 +344,7 @@ class Train_class(SeatType, StructuredNode):
 
     def get_ride(self):
         res = super().get_ride()
-        return Train_ride.inflate(res[0][0])
+        return Train_ride.inflate(res)
 
     @staticmethod
     def get_tickets(list_of_node_id, user):
