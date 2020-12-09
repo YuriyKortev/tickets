@@ -45,7 +45,7 @@ def export(filename):
 def import_db():
     file = request.files.get('file')
     file.save(app.config['UPLOAD_FOLDER'] + '/import.csv')
-    df = pd.read_csv('files/import.csv', encoding='cp1251')
+    df = pd.read_csv('files/import.csv', encoding='utf-8')
 
     df[df['_labels'] == ':City'].to_csv('files/City.csv', sep=',', encoding='utf-8')
     df[df['_labels'] == ':Airport'].to_csv('files/Airport.csv', sep=',', encoding='utf-8')

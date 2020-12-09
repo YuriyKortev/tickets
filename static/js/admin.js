@@ -125,7 +125,7 @@ $(document).ready(function() {
                 cache: false,
                 processData: false,
                 success: function(data) {
-                    $('.import').append('<p>Импорт успешно совершен!!!</p>')
+                    $('.files').append('<p style="font-size: 7px">Импорт успешно совершен!!!</p>')
                 },
             });
         })

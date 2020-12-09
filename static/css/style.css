@@ -1,4 +1,4 @@
-.form_container, .ticket, .ticket_buy{
+.form_contaifilner, .ticket, .ticket_buy{
     border: 2px solid #000000;
     border-radius: 10px;
     margin: 10px;
@@ -76,7 +76,7 @@ div.from{
 }
 
 .today_stats div{
-    height: 30%;
+    height: 33%;
     line-height: 100px;
     text-align: center;
     border: 2px solid #6f6f6f;
@@ -89,7 +89,7 @@ div.from{
     margin-left: 50px;
 }
 
-.today_stats div span{
+.today_stats .num{
     font-size: 50px;
     font-weight: bold;
     color: #79787d;
