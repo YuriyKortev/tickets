@@ -88,6 +88,7 @@ $(document).ready(function() {
                 url: url,
                 data: $(this).serialize(), // serializes the form's elements.
                 success: (data) => {
+                    console.log(data)
                     if(data === 'True'){
                         $(this).append('<p> Станция успешно добавлена!!!!!! </p>')  // display the returned data in the console.
                     }

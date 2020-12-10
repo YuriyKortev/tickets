@@ -5,7 +5,7 @@ from flask_principal import RoleNeed, ActionNeed, Permission, \
 from werkzeug.urls import url_parse
 from app import app
 from utils.models import Person, City, path_filter, DoesNotExist, Air_flight, Air_class, Train_class, Train_ride, \
-    SeatType, week_end, week_start, generate_export, import_from_csv, Station, Airport, date_range
+    SeatType, week_end, week_start, generate_export, import_from_csv, Station, Airport, date_range, ticket_filter
 from utils.forms import SearchForm_air, LoginForm, RegistrationForm, SearchForm_train, SearchRide, CreateRide, \
     CreateCity, CreateStation
 from utils.stats import get_week_stats, get_pie, get_range_stats
@@ -16,17 +16,29 @@ import webbrowser
 import threading
 
 
+def render_all_tickets(form, ride):
+    if form.class_.data:
+        tickets = [SeatType.get_ticket(tr, sc) for tr in ride.nodes.all() for sc in [tr.get_class(ct) for ct in form.class_.data]]
+    else:
+        tickets = [SeatType.get_ticket(tr, sc) for tr in ride.nodes.all() for sc in tr.ride_class.all()]
+
+    if form.date_to.data:
+        tickets = list(filter(ticket_filter(form.date_to.data), tickets))
+
+    return render_template('all_tickets.html', form=form, tickets=tickets)
+
+
 @app.route('/')
 @app.route('/air')
 def start_page():
-    tickets = [SeatType.get_ticket(af, sc) for af in Air_flight.nodes.all() for sc in af.plane_class.all()]
-    return render_template('all_tickets.html', form=SearchForm_air(), tickets=tickets)
+    form = SearchForm_air()
+    return render_all_tickets(form, Air_flight)
 
 
 @app.route('/train')
 def start_page_train():
-    tickets = [SeatType.get_ticket(tr, sc) for tr in Train_ride.nodes.all() for sc in tr.train_class.all()]
-    return render_template('all_tickets.html', form=SearchForm_train(), tickets=tickets)
+    form = SearchForm_air()
+    return render_all_tickets(form, Train_ride)
 
 
 admin = Permission(RoleNeed('admin'))
@@ -166,7 +178,8 @@ def render_range_stats():
 
     try:
         image = get_range_stats(air_stats, train_stats, list(date_range(start_date, end_date)))
-    except (ValueError, IndexError):
+    except (ValueError, IndexError) as e:
+        print(e)
         return 'https://sitechecker.pro/wp-content/uploads/2017/12/404.png'
 
     return image
@@ -188,7 +201,7 @@ def admin():
     create_city_form = CreateCity()
     create_station_form = CreateStation()
 
-    create_station_form.station_location.choices = [(city.name, city.name) for city in City.nodes.all()]
+    create_station_form.station_location.choices = [city.name for city in City.nodes.all()]
 
     labels_x_dare_range = list(date_range(week_start, week_end))
 
@@ -326,7 +339,7 @@ def search(form, ride_type):
                                form=form)
 
     error_messages.append('Вы не ввели данные в форму!!!')
-    return redirect(url_for('start_page'))
+    return render_all_tickets(form, ride_type)
 
 
 @app.route('/air/search/', methods=['GET'])

@@ -9,7 +9,7 @@ def image_from_plt(fig):
     tmpfile = BytesIO()
     fig.savefig(tmpfile, format='png', transparent=True)
     encoded = base64.b64encode(tmpfile.getvalue()).decode('utf-8')
-    return "data:image/png;base64,"+encoded
+    return "data:image/png;base64," + encoded
 
 
 def get_week_stats(y_air, y_train):
@@ -20,7 +20,7 @@ def get_week_stats(y_air, y_train):
 
     fig, ax = plt.subplots()
     ax.bar(x, y_air, width=0.7, label='Полеты')
-    ax.bar(x, y_train, width=0.7, label='Поезда',bottom=y_air)
+    ax.bar(x, y_train, width=0.7, label='Поезда', bottom=y_air)
     ax.legend(prop={'size': 20})
 
     ax.set_facecolor('seashell')
@@ -36,17 +36,26 @@ def get_range_stats(y_air, y_train, x_labels):
 
     y_air = np.array(y_air)
     y_train = np.array(y_train)
-
     x = np.arange(len(y_air))
-    x_new = np.linspace(0, len(y_air)-1, 200)
-    spline_air = interpolate.make_interp_spline(x, y_air)
-    spline_train = interpolate.make_interp_spline(x, y_train)
 
-    y_air_new = spline_air(x_new)
-    y_train_new = spline_train(x_new)
+    fmt = '-o'
 
-    plt.plot(x_new, y_air_new, label='Полеты')
-    plt.plot(x_new, y_train_new, label='Поезда')
+    if len(x_labels) > 3:
+        x_new = np.linspace(0, len(y_air) - 1, 200)
+        spline_air = interpolate.make_interp_spline(x, y_air)
+        spline_train = interpolate.make_interp_spline(x, y_train)
+
+        y_air_new = spline_air(x_new)
+        y_train_new = spline_train(x_new)
+
+        y_air = y_air_new
+        y_train = y_train_new
+        x = x_new
+
+        fmt = '-'
+
+    plt.plot(x, y_air, fmt, label='Полеты')
+    plt.plot(x, y_train, fmt, label='Поезда')
     plt.legend()
     ax = plt.gca()
     ax.yaxis.grid(True)

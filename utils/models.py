@@ -8,8 +8,8 @@ from app import app, login_manager
 from datetime import timedelta, date, datetime
 
 
-#config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
-config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
+config.DATABASE_URL = 'bolt://neo4j:123145@localhost:7687'
+#config.DATABASE_URL = 'bolt://neo4j:test@neo4j:7687'
 config.AUTO_INSTALL_LABELS = True
 
 # today = datetime.now().date()
@@ -371,35 +371,35 @@ class Train_class(SeatType, StructuredNode):
 class Air_flight(Ride, StructuredNode):
     from_ = RelationshipFrom(Airport, 'FROM', model=Dtime, cardinality=One)
     to_ = RelationshipTo(Airport, 'TO', model=Dtime, cardinality=One)
-    plane_class = RelationshipTo('Air_class', 'CLASS')
+    ride_class = RelationshipTo('Air_class', 'CLASS')
     station_type = 'Airport'
     ticket_type = 'air'
     ticket_class = Air_class
 
     def get_class(self, class_id):
         if class_id == 1:
-            return self.plane_class.get_or_none(class_type='Economy')
+            return self.ride_class.get_or_none(class_type='Economy')
         elif class_id == 2:
-            return self.plane_class.get_or_none(class_type='Business')
+            return self.ride_class.get_or_none(class_type='Business')
         elif class_id == 3:
-            return self.plane_class.get_or_none(class_type='First')
+            return self.ride_class.get_or_none(class_type='First')
 
 
 class Train_ride(Ride, StructuredNode):
     from_ = RelationshipFrom('Station', 'FROM', model=Dtime, cardinality=One)
     to_ = RelationshipTo('Station', 'TO', model=Dtime, cardinality=One)
-    train_class = RelationshipTo('Train_class', 'CLASS')
+    ride_class = RelationshipTo('Train_class', 'CLASS')
     station_type = 'Station'
     ticket_type = 'train'
     ticket_class = Train_class
 
     def get_class(self, class_id):
         if class_id == 1:
-            return self.train_class.get_or_none(class_type='Купэ')
+            return self.ride_class.get_or_none(class_type='Купэ')
         elif class_id == 2:
-            return self.train_class.get_or_none(class_type='Плацкарт')
+            return self.ride_class.get_or_none(class_type='Плацкарт')
         elif class_id == 3:
-            return self.train_class.get_or_none(class_type='СВ')
+            return self.ride_class.get_or_none(class_type='СВ')
 
 
 class Person(UserMixin, StructuredNode):
@@ -462,7 +462,7 @@ class Station(StructuredNode):
 
 def path_filter(date_time):
     def fun(path):
-        if date_time is None or path[0]['dtime_departure'].date() == date_time.date():
+        if date_time is None or path[0]['dtime_departure'].date() == date_time:
             i = 0
             while i < len(path) - 1:
                 if path[i]['dtime_arrived'] > path[i + 1]['dtime_departure']:
@@ -472,5 +472,15 @@ def path_filter(date_time):
             return True
 
         return False
+
+    return fun
+
+
+def ticket_filter(date_time):
+    def fun(ticket):
+        if ticket['dtime_departure'].date() == date_time:
+            return True
+        else:
+            return False
 
     return fun

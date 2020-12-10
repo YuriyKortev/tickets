@@ -7,6 +7,7 @@ from wtforms.fields.html5 import DateTimeLocalField
 from datetime import datetime
 import ast
 
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -23,14 +24,18 @@ class SearchForm(FlaskForm):
 
 
 class SearchForm_air(SearchForm):
-    class_ = SelectField(u'Класс', choices=[('[1, 2, 3]', 'Любой'), ('[1]', 'Эконом'), ('[2]', 'Бизнес'), ('[3]', 'Первый')],
+    class_ = SelectField(u'Класс',
+                         choices=[('[1, 2, 3]', 'Любой'), ('[1]', 'Эконом'), ('[2]', 'Бизнес'), ('[3]', 'Первый')],
                          coerce=ast.literal_eval)
+    class_.data = [1, 2, 3]
     action = 'search_air'
 
 
 class SearchForm_train(SearchForm):
-    class_ = SelectField(u'Класс', choices=[('[1, 2, 3]', 'Любой'), ('[1]', 'Плацкарт'), ('[2]', 'Купе'), ('[3]', 'СВ')],
+    class_ = SelectField(u'Класс',
+                         choices=[('[1, 2, 3]', 'Любой'), ('[1]', 'Плацкарт'), ('[2]', 'Купе'), ('[3]', 'СВ')],
                          coerce=ast.literal_eval)
+    class_.data = [1, 2, 3]
     action = 'search_train'
 
 
@@ -120,8 +125,18 @@ class CreateStation(FlaskForm):
     station_type = SelectField('Тип станции', choices=[('Airport', 'Аэропорт'), ('Station', 'ЖД станция')],
                                validators=[DataRequired()])
     station_name = StringField('Название станции', validators=[DataRequired()])
-    station_location = SelectField('Местоположение', coerce=str)
+    station_location = SelectField('Местоположение', validators=[DataRequired()], validate_choice=False)
 
     submit = SubmitField('Создать')
 
+    def validate_station_name(form, station_n):
+        city = City.nodes.get_or_none(name=form.station_location.data)
+        print(form.station_location.data)
+        st = None
+        if form.station_type.data == 'Airport':
+            st = city.airports.get_or_none(name=station_n.data)
+        elif form.station_type.data == 'Station':
+            st = city.stations.get_or_none(name=station_n.data)
 
+        if st:
+            raise ValidationError('Такая станция уже существует!!!!!!')
